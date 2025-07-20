@@ -43,32 +43,32 @@ function activate(context) {
     const interval = setInterval(async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor || editor.document.languageId !== 'python') {
-            output.appendLine("📄 No active Python document – skipping check.");
+            output.appendLine("No active Python document – skipping check.");
             return;
         }
         try {
             const ok = await checkLanguageServerHealth(editor.document.uri);
             if (!ok) {
-                output.appendLine("--> Health check failed – attempting passive restart...");
+                output.appendLine("Health check failed – attempting passive restart...");
                 await passiveRecovery(editor.document);
             }
             else {
-                output.appendLine("--> Language Server is responsive.");
+                output.appendLine("Language Server is responsive.");
             }
         }
         catch (err) {
-            output.appendLine(`--> Unexpected error: ${err}`);
+            output.appendLine(`Unexpected error: ${err}`);
         }
     }, 30000); // alle 30 Sekunden
     context.subscriptions.push({
         dispose() {
             clearInterval(interval);
-            output.appendLine("--> Watchdog stopped.");
+            output.appendLine("Watchdog stopped.");
         }
     });
 }
 function deactivate() {
-    output?.appendLine("--> Watchdog deactivated.");
+    output?.appendLine("Watchdog deactivated.");
     output?.dispose();
 }
 async function checkLanguageServerHealth(uri) {
@@ -88,10 +88,10 @@ async function passiveRecovery(doc) {
         dummyChange.insert(doc.uri, pos, "");
         await vscode.workspace.applyEdit(dummyChange);
         await delay(500);
-        output.appendLine("--> Triggered passive restart via empty insert.");
+        output.appendLine("Triggered passive restart via empty insert.");
     }
     catch (err) {
-        output.appendLine(`--> Passive restart failed: ${err}`);
+        output.appendLine(`Passive restart failed: ${err}`);
     }
 }
 function delay(ms) {
