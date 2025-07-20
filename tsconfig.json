@@ -1,15 +1,83 @@
-{
-  "compilerOptions": {
-    "module": "commonjs",
-    "target": "es6",
-    "outDir": "out",
-    "lib": ["es6"],
-    "sourceMap": true,
-    "rootDir": "src",
-    "strict": true,
-    "esModuleInterop": true,
-    "types": ["vscode"]
-  },
-  "include": ["src"],
-  "exclude": ["node_modules", ".vscode-test"]
+import * as vscode from 'vscode';
+
+let output: vscode.OutputChannel;
+
+export function activate(context: vscode.ExtensionContext) {
+    output = vscode.window.createOutputChannel("Language Server Watchdog");
+    output.appendLine("🐍 Watchdog started.");
+
+    const interval = setInterval(async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor || editor.document.languageId !== 'python') {
+            output.appendLine("📄 No active Python document – skipping check.");
+            return;
+        }
+
+        try {
+            const ok = await checkLanguageServerHealth(editor.document.uri);
+            if (!ok) {
+                output.appendLine("⚠️ Health check failed – attempting passive restart...");
+                await passiveRecovery(editor.document);
+            } else {
+                output.appendLine("✅ Language Server is responsive.");
+            }
+        } catch (err) {
+            output.appendLine(`❌ Unexpected error: ${err}`);
+        }
+    }, 30000); // alle 30 Sekunden
+
+    context.subscriptions.push({
+        dispose() {
+            clearInterval(interval);
+            output.appendLine("🛑 Watchdog stopped.");
+        }
+    });
+}
+
+export function deactivate() {
+    output?.appendLine("🛑 Watchdog deactivated.");
+    output?.dispose();
+}
+
+async function checkLanguageServerHealth(uri: vscode.Uri): Promise<boolean> {
+    try {
+        const result = await withTimeout(
+            vscode.commands.executeCommand<vscode.DocumentSymbol[]>('vscode.executeDocumentSymbolProvider', uri),
+            3000
+        );
+        return !!(result && result.length >= 0);
+    } catch (e) {
+        output.appendLine(`⏱ Timeout or error during health check: ${e}`);
+        return false;
+    }
+}
+
+async function passiveRecovery(doc: vscode.TextDocument) {
+    try {
+        const dummyChange = new vscode.WorkspaceEdit();
+        const pos = new vscode.Position(0, 0);
+        dummyChange.insert(doc.uri, pos, "");
+        await vscode.workspace.applyEdit(dummyChange);
+        await delay(500);
+        output.appendLine("🔄 Triggered passive restart via empty insert.");
+    } catch (err) {
+        output.appendLine(`❌ Passive restart failed: ${err}`);
+    }
+}
+
+function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function withTimeout<T>(promise: Thenable<T>, timeoutMs: number): Promise<T> {
+    return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error("Timeout")), timeoutMs);
+        promise.then(result => {
+            clearTimeout(timeout);
+            resolve(result);
+        }, err => {
+            clearTimeout(timeout);
+            reject(err);
+        });
+    });
 }
