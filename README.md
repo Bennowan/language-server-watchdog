@@ -17,7 +17,7 @@ Designed to avoid full VS Code reloads, preventing loss of unsaved work.
 
 ### Install from Release
 
-1. Download the latest `.vsix` package from the [Releases](https://github.com/Bennowan2/language-server-watchdog/releases).
+1. Download the latest `.vsix` package from the [Releases](https://github.com/Bennowan/language-server-watchdog/releases).
 2. Install it using the VS Code CLI:
 
    ```bash
