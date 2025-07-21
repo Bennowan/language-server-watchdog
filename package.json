@@ -35,7 +35,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Bennowan2/language-server-watchdog.git"
+    "url": "https://github.com/Bennowan/language-server-watchdog.git"
   },
   "keywords": [
     "python",
@@ -45,7 +45,7 @@
     "vscode"
   ],
   "bugs": {
-    "url": "https://github.com/Bennowan2/language-server-watchdog/issues"
+    "url": "https://github.com/Bennowan/language-server-watchdog/issues"
   },
-  "homepage": "https://github.com/Bennowan2/language-server-watchdog"
+  "homepage": "https://github.com/Bennowan/language-server-watchdog"
 }
