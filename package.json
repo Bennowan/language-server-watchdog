@@ -3,7 +3,7 @@
   "displayName": "Language Server Watchdog",
   "description": "Monitors the Python language server in VS Code and restarts it if it stops responding – without completely reloading VS Code.",
   "version": "0.0.2",
-  "publisher": "bennowan2",
+  "publisher": "bennowan",
   "engines": {
     "vscode": "^1.80.0"
   },
